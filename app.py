@@ -1,4 +1,5 @@
 import joblib
+import nltk
 import numpy as np
 import tensorflow as tf
 from bs4 import BeautifulSoup
@@ -8,6 +9,8 @@ from nltk.stem.porter import *
 from sklearn.feature_extraction.text import CountVectorizer
 
 app = Flask(__name__)
+
+nltk.download("stopwords")
 
 vectorizer: CountVectorizer = CountVectorizer(
     decode_error="replace",
