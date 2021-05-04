@@ -1,11 +1,11 @@
 import joblib
+import numpy as np
+import tensorflow as tf
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, request
 from nltk.corpus import stopwords
 from nltk.stem.porter import *
 from sklearn.feature_extraction.text import CountVectorizer
-from tensorflow import keras
-from tensorflow.keras.models import Sequential
 
 app = Flask(__name__)
 
@@ -15,7 +15,10 @@ vectorizer: CountVectorizer = CountVectorizer(
     preprocessor=lambda x: x,
     tokenizer=lambda x: x,
 )
-model: Sequential = keras.models.load_model("model.h5")
+interpreter = tf.lite.Interpreter(model_path="model_quant.tflite")
+interpreter.allocate_tensors()
+input_index = interpreter.get_input_details()[0]["index"]
+output_index = interpreter.get_output_details()[0]["index"]
 
 
 @app.route("/")
@@ -59,8 +62,11 @@ def review_to_words(review: str) -> list:
 def predict():
     review = request.form["review"]
     words = [review_to_words(review)]
-    vector = vectorizer.transform(words)
-    prediction = round(model.predict(vector)[0][0])
+    vector = vectorizer.transform(words).toarray()
+    input_data = np.array(vector, dtype=np.float32)
+    interpreter.set_tensor(input_index, input_data)
+    interpreter.invoke()
+    prediction = round(interpreter.get_tensor(output_index)[0][0])
     return str(prediction)
 
 
