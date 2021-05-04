@@ -1,4 +1,5 @@
-import joblib
+import pickle
+
 import nltk
 import numpy as np
 import tensorflow as tf
@@ -14,7 +15,7 @@ nltk.download("stopwords")
 
 vectorizer: CountVectorizer = CountVectorizer(
     decode_error="replace",
-    vocabulary=joblib.load("vocabulary.pkl"),
+    vocabulary=pickle.load(open("vocabulary.pkl", "rb")),
     preprocessor=lambda x: x,
     tokenizer=lambda x: x,
 )
